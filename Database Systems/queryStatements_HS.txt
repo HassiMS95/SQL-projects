@@ -1,0 +1,9 @@
+-- Updates the price of the property with ID 'P1011'
+UPDATE Property
+SET property_price = 4000000.00
+WHERE property_id = 'P1011';
+
+-- Sorts the properties by price in descending order from most to least expensive
+SELECT *
+FROM Property
+ORDER BY property_price DESC;

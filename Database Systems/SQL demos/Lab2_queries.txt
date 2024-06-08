@@ -1,0 +1,80 @@
+/*
+Hassan Sheikh
+fnf079
+Lab 2
+*/
+
+-- Query 1: Lists the title, subject, and cost of each book then sorts them by subject first, then cost with the lowest cost book listed first.
+SELECT BOOK_TITLE, BOOK_SUBJECT, BOOK_COST
+FROM BOOK
+ORDER BY BOOK_SUBJECT, BOOK_COST asc;
+
+-- Query 2: Lists the names of all patrons.
+SELECT PAT_FNAME, PAT_LNAME
+FROM PATRON;
+
+-- Query 3: Lists the distinct years each book was published and how many books were published in that year.
+SELECT DISTINCT BOOK_YEAR AS Punlication_year, COUNT(*) AS Number_Of_Books_Published
+FROM BOOK
+GROUP BY BOOK_YEAR
+ORDER BY BOOK_YEAR;
+
+-- Query 4: Finds all the titles of books that cost 59.95.
+SELECT BOOK_TITLE
+FROM BOOK
+WHERE BOOK_COST = 59.95;
+
+-- Query 5: Lists each authors' first and last names where the birthdate is missing (null).
+SELECT AU_FNAME, AU_LNAME
+FROM AUTHOR
+WHERE AU_BIRTHYEAR IS NULL;
+
+-- Query 6: Lists each authors' first and last names along with the number of books they have written.
+SELECT AUTHOR.AU_FNAME, AUTHOR.AU_LNAME, COUNT(WRITES.BOOK_NUM) AS Number_of_Books_Written
+FROM AUTHOR
+INNER JOIN WRITES ON AUTHOR.AU_ID = WRITES.AU_ID
+GROUP BY AUTHOR.AU_FNAME, AUTHOR.AU_LNAME
+ORDER BY AUTHOR.AU_LNAME;
+
+-- Query 7: Lists the patrons' first and last names, book titles, and the number of days books were kept by patrons.
+SELECT PATRON.PAT_FNAME, PATRON.PAT_LNAME,
+       BOOK.BOOK_TITLE,
+       DATEDIFF(checkout.CHECK_IN_DATE, checkout.CHECK_OUT_DATE) AS Days_Kept
+FROM CHECKOUT
+JOIN PATRON ON CHECKOUT.PAT_ID = PATRON.PAT_ID
+JOIN book ON CHECKOUT.BOOK_NUM = BOOK.BOOK_NUM;
+
+-- Query 8: Lists the authors' first and last names, book titles, and book subjects, ordered by book subject.
+SELECT AUTHOR.AU_FNAME, AUTHOR.AU_LNAME,
+       BOOK.BOOK_TITLE,
+       BOOK.BOOK_SUBJECT
+FROM AUTHOR
+JOIN WRITES ON AUTHOR.AU_ID = WRITES.AU_ID
+JOIN BOOK ON WRITES.BOOK_NUM = BOOK.BOOK_NUM
+ORDER BY BOOK.BOOK_SUBJECT;
+
+-- Query 9: Lists all patrons with currently checked-out books, including their first name, last name, and book title.
+SELECT PATRON.PAT_FNAME, PATRON.PAT_LNAME, BOOK.BOOK_TITLE
+FROM CHECKOUT
+JOIN PATRON ON CHECKOUT.PAT_ID = PATRON.PAT_ID
+JOIN BOOK ON CHECKOUT.BOOK_NUM = BOOK.BOOK_NUM
+WHERE CHECKOUT.CHECK_IN_DATE IS NULL;
+
+-- Query 10: Lists all book numbers, titles, and the number of times each book has been checked out, while being ordered by checkouts and title.
+SELECT BOOK.BOOK_NUM, BOOK.BOOK_TITLE, COUNT(CHECKOUT.BOOK_NUM) AS Checkouts
+FROM BOOK
+INNER JOIN CHECKOUT ON BOOK.BOOK_NUM = CHECKOUT.BOOK_NUM
+GROUP BY BOOK.BOOK_NUM, BOOK.BOOK_TITLE
+ORDER BY Checkouts DESC, BOOK.BOOK_TITLE;
+
+-- Query 11: Lists all patrons who have checked out books by 'Manish Aggerwal', who has an ID of 581, along with the number of books they've checked out from that author.
+SELECT PATRON.PAT_FNAME, PATRON.PAT_LNAME,
+       AUTHOR.AU_FNAME, AUTHOR.AU_LNAME,
+       COUNT(CHECKOUT.BOOK_NUM) AS Number_of_Books_Checked_Out
+FROM CHECKOUT
+JOIN PATRON ON CHECKOUT.PAT_ID = PATRON.PAT_ID
+JOIN BOOK ON CHECKOUT.BOOK_NUM = BOOK.BOOK_NUM
+JOIN WRITES ON BOOK.BOOK_NUM = WRITES.BOOK_NUM
+JOIN AUTHOR ON WRITES.AU_ID = AUTHOR.AU_ID
+WHERE AUTHOR.AU_ID = 581
+GROUP BY PATRON.PAT_ID, AUTHOR.AU_ID;

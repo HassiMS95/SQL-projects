@@ -1,0 +1,115 @@
+/*
+Hassan Sheikh
+fnf079
+Lab 3
+*/
+
+-- 1.  Lists all purchases made by customers.
+SELECT 
+       customer.CUS_CODE, 
+       invoice.INV_NUMBER, 
+       invoice.INV_DATE, 
+       product.P_DESCRIPT, 
+       line.LINE_UNITS, 
+       line.LINE_PRICE
+FROM line
+JOIN invoice ON line.INV_NUMBER = invoice.INV_NUMBER
+JOIN product ON line.P_CODE = product.P_CODE
+JOIN customer ON invoice.CUS_CODE = customer.CUS_CODE
+ORDER BY customer.CUS_CODE, invoice.INV_NUMBER, product.P_DESCRIPT;
+
+-- 2. Generates a list of customer purchases, including subtotals for the invoice line numbers.
+SELECT
+       customer.CUS_CODE,
+       invoice.INV_NUMBER,
+       product.P_DESCRIPT,
+       line.LINE_UNITS AS "Units Bought",
+       line.LINE_PRICE AS "Unit Price",
+       (line.LINE_UNITS * line.LINE_PRICE) AS "Subtotal"
+FROM line
+JOIN invoice ON line.INV_NUMBER = invoice.INV_NUMBER
+JOIN product ON line.P_CODE = product.P_CODE
+JOIN customer ON invoice.CUS_CODE = customer.CUS_CODE; 
+
+-- 3. An improvement from Query 2 by displaying the customer name instead of the customer Code
+SELECT
+       Customer.CUS_LNAME AS "Customer Last Name",
+       Customer.CUS_FNAME AS "Customer First Name",
+       invoice.INV_NUMBER,
+       product.P_DESCRIPT,
+       line.LINE_UNITS AS "Units Bought",
+       line.LINE_PRICE AS "Unit Price",
+       (line.LINE_UNITS * line.LINE_PRICE) AS "Subtotal"
+FROM line
+JOIN customer ON line.CUS_CODE = customer.CUS_CODE
+JOIN invoice ON line.INV_NUMBER = invoice.INV_NUMBER
+JOIN product ON line.P_CODE = product.P_CODE;
+
+-- 4. Displays the customer's name, their balances, and total purchases.
+SELECT
+       customer.CUS_LNAME AS "Customer Last Name",
+       customer.CUS_FNAME AS "Customer First Name",
+       SUM(line.LINE_UNITS * line.LINE_PRICE) AS "Total Purchases",
+       customer.CUS_BALANCE
+FROM line
+JOIN invoice ON line.INV_NUMBER = invoice.INV_NUMBER
+JOIN customer ON invoice.CUS_CODE = customer.CUS_CODE
+GROUP BY customer.CUS_LNAME, customer.CUS_FNAME, customer.CUS_BALANCE;  
+
+-- 5. Improved query from Query 4 as the number of total purchases has been added.
+SELECT
+       customer.CUS_LNAME AS "Customer Last Name",
+       customer.CUS_FNAME AS "Customer First Name",
+       COUNT(*) AS "Number of Purchases",
+       SUM(line.LINE_UNITS * line.LINE_PRICE) AS "Total Purchases",
+       customer.CUS_BALANCE
+FROM line
+JOIN invoice ON line.INV_NUMBER = invoice.INV_NUMBER
+JOIN customer ON invoice.CUS_CODE = customer.CUS_CODE
+GROUP BY customer.CUS_LNAME, customer.CUS_FNAME, customer.CUS_BALANCE;
+
+-- 6. Calculates the average purchase amount for each customer to Query 5
+SELECT
+       customer.CUS_LNAME AS "Customer Last Name",
+       customer.CUS_FNAME AS "Customer First Name",
+       SUM(line.LINE_UNITS * line.LINE_PRICE) AS "Total Purchases",
+       COUNT(*) AS "Number of Purchases",
+       AVG(line.LINE_UNITS * line.LINE_PRICE) AS "Average Purchase Amount"
+FROM line
+JOIN customer ON line.CUS_CODE = customer.CUS_CODE
+GROUP BY customer.CUS_LNAME, customer.CUS_FNAME;
+
+-- 7. Provides the total number of invoices, the sales total for all invoices, the smallest and largest purchase amounts, and avergae purchase amounts
+SELECT 
+       COUNT(DISTINCT invoice.INV_NUMBER) AS "Total Number of Invoices",
+       SUM(line.LINE_UNITS * line.LINE_PRICE) AS "Sales Total",
+       MIN(line.LINE_UNITS * line.LINE_PRICE) AS "Smallest Purchase Amount",
+       MAX(line.LINE_UNITS * line.LINE_PRICE) AS "Largest Purchase Amount",
+       AVG(line.LINE_UNITS * line.LINE_PRICE) AS "Average Purchase Amount"
+FROM line
+JOIN invoice ON line.INV_NUMBER = invoice.INV_NUMBER;
+
+-- 8. List of all customers who have never made a purchase, along with their names and phone numbers
+SELECT
+       CONCAT(customer.CUS_FNAME, ' ', customer.CUS_LNAME) AS "Customer Name",
+       CONCAT(customer.CUS_AREACODE, '-', customer.CUS_PHONE) AS "Customer Phone Number"
+FROM customer
+WHERE customer.cus_code NOT IN ( SELECT invoice.cus_code FROM invoice );
+
+-- 9. Calculates the value of products currently in inventory
+SELECT
+       product.P_DESCRIPT AS "Product Description",
+       product.P_QOH AS "Quantity on Hand",
+       product.P_PRICE AS "Unit Price",
+       (product.P_QOH * product.P_PRICE) AS "Subtotal"
+FROM product; 
+
+-- 10. Displays which vendor does the company use most frequently to supply products. Also increased the limit in case of any ties.
+SELECT
+       vendor.V_NAME AS "Vendor Name",
+       COUNT(product.P_CODE) AS "Total Products"
+FROM product
+JOIN vendor ON product.V_CODE = vendor.V_CODE
+GROUP BY vendor.V_NAME
+ORDER BY COUNT(product.P_CODE) DESC
+LIMIT 3;
